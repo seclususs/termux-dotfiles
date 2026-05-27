@@ -14,7 +14,7 @@ pkg install -y root-repo x11-repo
 pkg upgrade -y
 
 echo "[*] Installing core packages..."
-pkg install -y zsh git wget curl ncurses-utils bc coreutils findutils grep sed awk termux-exec termux-api termux-services nano fzf openssh unzip tar p7zip
+pkg install -y zsh git wget curl ncurses-utils bc coreutils findutils grep sed gawk termux-exec termux-api termux-services nano fzf openssh unzip tar p7zip
 
 DOTFILES_DIR="$HOME/termux-dotfiles"
 ZSH_DIR="$HOME/.zsh"
@@ -59,9 +59,9 @@ for PLUGIN in "${!PLUGINS[@]}"; do
 done
 
 echo "[*] Creating quick storage symlinks..."
-ln -sf ~/storage/downloads ~/Downloads
-ln -sf ~/storage/dcim ~/Pictures
-ln -sf ~/storage/shared ~/Documents
+ln -sfn ~/storage/downloads ~/Downloads
+ln -sfn ~/storage/dcim ~/Pictures
+ln -sfn ~/storage/shared ~/Documents
 
 echo "[*] Symlinking configurations..."
 ln -sf "$DOTFILES_DIR/zsh/.zshrc" "$HOME/.zshrc"
@@ -74,7 +74,7 @@ termux-reload-settings
 
 if [[ "$SHELL" != *"/zsh" ]]; then
     echo "[*] Changing default shell to zsh..."
-    chsh -s $(which zsh)
+    chsh -s zsh
 fi
 
 echo "[+] Installation complete! Please restart your Termux session."
