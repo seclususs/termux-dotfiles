@@ -35,20 +35,24 @@ sudo() {
     local success=0
     local current_user="${USER:-$(whoami)}"
     
-    while (( attempts < max_attempts )); do
-        print -n "[sudo] password for $current_user: "
-        read -r -s user_pass
-        echo ""
-        
-        local input_hash=$(echo -n "$user_pass" | sha256sum | awk '{print $1}')
-        if [[ "$input_hash" == "$SUDO_HASH" ]]; then
-            success=1
-            break
-        else
-            echo "Sorry, try again."
-            ((attempts++))
-        fi
-    done
+    if [[ "$TERMUX_FAKEROOT" == "1" ]]; then
+        success=1
+    else
+        while (( attempts < max_attempts )); do
+            print -n "[sudo] password for $current_user: "
+            read -r -s user_pass
+            echo ""
+            
+            local input_hash=$(echo -n "$user_pass" | sha256sum | awk '{print $1}')
+            if [[ "$input_hash" == "$SUDO_HASH" ]]; then
+                success=1
+                break
+            else
+                echo "Sorry, try again."
+                ((attempts++))
+            fi
+        done
+    fi
     
     if (( success == 0 )); then
         echo "sudo: $max_attempts incorrect password attempts"
@@ -56,10 +60,46 @@ sudo() {
     fi
     
     if [[ "$1" =~ ^(pm|cmd|am|svc|settings|content|input|dpm)$ ]]; then
-        print -r "$env_vars ${(q)@}" | su
+        print -r "$env_vars ${(q)@}" | command su
     else
-        su -c "$env_vars ${(q)@}"
+        command su -c "$env_vars ${(q)@}"
     fi
+}
+
+########################
+# Fake Root Mode Wrapper
+########################
+su() {
+    if [[ $# -gt 0 ]]; then
+        command su "$@"
+        return $?
+    fi
+    
+    if [[ "$TERMUX_FAKEROOT" == "1" ]]; then
+        TERMUX_FAKEROOT=1 zsh
+        return 0
+    fi
+    
+    local HASH_FILE="$HOME/.sudo_hash"
+    local SUDO_HASH=""
+    [ -f "$HASH_FILE" ] && SUDO_HASH=$(cat "$HASH_FILE" 2>/dev/null)
+    
+    if [[ -z "$SUDO_HASH" ]]; then
+        echo "su: Authentication service cannot retrieve authentication info"
+        return 1
+    fi
+    
+    print -n "Password: "
+    read -r -s user_pass
+    echo ""
+    
+    local input_hash=$(echo -n "$user_pass" | sha256sum | awk '{print $1}')
+    if [[ "$input_hash" != "$SUDO_HASH" ]]; then
+        echo "su: Authentication failure"
+        return 1
+    fi
+    
+    TERMUX_FAKEROOT=1 zsh
 }
 
 #########################
