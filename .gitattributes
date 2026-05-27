@@ -1,0 +1,9 @@
+* text eol=lf
+
+*.zsh linguist-language=Shell
+.zshrc linguist-language=Shell
+install.sh linguist-language=Shell
+
+.nanorc linguist-language=Ini
+.dircolors linguist-language=Properties
+*.properties linguist-language=Properties

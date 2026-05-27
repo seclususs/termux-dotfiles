@@ -1,0 +1,179 @@
+########################
+# Custom shell functions
+########################
+
+#####################
+# Root access wrapper
+#####################
+sudo() {
+    local HASH_FILE="$HOME/.sudo_hash"
+    local SUDO_HASH=""
+    [ -f "$HASH_FILE" ] && SUDO_HASH=$(cat "$HASH_FILE" 2>/dev/null)
+    
+    if [[ -z "$SUDO_HASH" ]]; then
+        echo "sudo: /etc/sudoers is world writable"
+        return 1
+    fi
+    
+    if [[ $# -eq 0 ]]; then
+        echo "usage: sudo -h | -K | -k | -V"
+        echo "usage: sudo -v [-AknS] [-g group] [-h host] [-p prompt] [-u user]"
+        echo "usage: sudo -l [-AknS] [-g group] [-h host] [-p prompt] [-U user] [-u user] [command]"
+        return 1
+    fi
+    
+    if [[ "$1" =~ ^(apt|apt-get|pkg)$ ]]; then
+        command "$1" "${@:2}"
+        return $?
+    fi
+    
+    local termux_prefix="/data/data/com.termux/files/usr"
+    local env_vars="export PATH=/system/bin:/system/xbin:$PATH:$termux_prefix/bin; export HOME=\"$HOME\"; export TERM=\"$TERM\"; export LANG=\"$LANG\"; unset LD_LIBRARY_PATH LD_PRELOAD; cd \"$PWD\";"
+    
+    local attempts=0
+    local max_attempts=3
+    local success=0
+    local current_user="${USER:-$(whoami)}"
+    
+    while (( attempts < max_attempts )); do
+        print -n "[sudo] password for $current_user: "
+        read -r -s user_pass
+        echo ""
+        
+        local input_hash=$(echo -n "$user_pass" | sha256sum | awk '{print $1}')
+        if [[ "$input_hash" == "$SUDO_HASH" ]]; then
+            success=1
+            break
+        else
+            echo "Sorry, try again."
+            ((attempts++))
+        fi
+    done
+    
+    if (( success == 0 )); then
+        echo "sudo: $max_attempts incorrect password attempts"
+        return 1
+    fi
+    
+    if [[ "$1" =~ ^(pm|cmd|am|svc|settings|content|input|dpm)$ ]]; then
+        print -r "$env_vars ${(q)@}" | su
+    else
+        su -c "$env_vars ${(q)@}"
+    fi
+}
+
+#########################
+# Service manager wrapper
+#########################
+systemctl() {
+    if [[ $# -lt 2 ]]; then
+        echo "Usage: systemctl {start|stop|restart|status|enable|disable} <service>"
+        return 1
+    fi
+    
+    local action="$1"
+    local service="$2"
+    
+    case "$action" in
+        start) command sv up "$service" 2>/dev/null ;;
+        stop) command sv down "$service" 2>/dev/null ;;
+        restart) command sv restart "$service" 2>/dev/null ;;
+        status) command sv status "$service" ;;
+        enable)
+            if [ -d "$PREFIX/share/termux-services/$service" ]; then
+                ln -sf "$PREFIX/share/termux-services/$service" "$PREFIX/var/service/"
+                echo "Created symlink /etc/systemd/system/multi-user.target.wants/${service}.service → /lib/systemd/system/${service}.service."
+            else
+                echo "Failed to enable unit: Unit file ${service}.service does not exist."
+            fi
+        ;;
+        disable)
+            rm -f "$PREFIX/var/service/$service"
+            echo "Removed /etc/systemd/system/multi-user.target.wants/${service}.service."
+        ;;
+        *)
+            echo "Unknown operation '$action'."
+            return 1
+        ;;
+    esac
+}
+
+#########################
+# Package manager wrapper
+#########################
+apt() {
+    if [[ "$1" =~ ^(install|search|update|upgrade|remove|autoremove|clean)$ ]]; then
+        command pkg "$@"
+    else
+        command apt "$@"
+    fi
+}
+
+####################
+# Legacy apt wrapper
+####################
+apt-get() { apt "$@"; }
+
+#######################
+# Fallback ping command
+#######################
+ping() {
+    if command ping -c 1 "$1" >/dev/null 2>&1; then
+        command ping -c 4 "$@"
+    else
+        su -c "/system/bin/ping -c 4 ${(q)@}"
+    fi
+}
+
+###########################
+# Safe permissions modifier
+###########################
+chmod() {
+    if [[ "$*" == *"/sdcard/"* || "$*" == *"/storage/emulated/"* ]]; then
+        return 0
+    fi
+    command chmod "$@"
+}
+
+##########################
+# Dummy ownership function
+##########################
+chown() {
+    return 0
+}
+
+#####################
+# File opener wrapper
+#####################
+xdg-open() {
+    if command -v termux-open >/dev/null 2>&1; then
+        command termux-open "$@"
+    else
+        echo "xdg-open: command not found. Please run: apt install termux-api"
+        return 127
+    fi
+}
+
+#############################
+# Universal archive extractor
+#############################
+ex() {
+    if [[ -f $1 ]]; then
+        case $1 in
+            *.tar.bz2)   tar xjf "$1"   ;;
+            *.tar.gz)    tar xzf "$1"   ;;
+            *.bz2)       bunzip2 "$1"   ;;
+            *.rar)       unrar x "$1"   ;;
+            *.gz)        gunzip "$1"    ;;
+            *.tar)       tar xf "$1"    ;;
+            *.tbz2)      tar xjf "$1"   ;;
+            *.tgz)       tar xzf "$1"   ;;
+            *.zip)       unzip "$1"     ;;
+            *.Z)         uncompress "$1";;
+            *.7z)        7z x "$1"      ;;
+            *)           echo "ex: '$1' has unknown archive format." ;;
+        esac
+    else
+        echo "ex: '$1' is not a valid file."
+    fi
+}
