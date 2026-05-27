@@ -61,6 +61,12 @@ EXEC 01;32
 .swm 01;31
 .dwm 01;31
 .esd 01;31
+.apk 01;31
+.xapk 01;31
+.iso 01;31
+.img 01;31
+.vdi 01;31
+.qcow2 01;31
 
 # Images/Media
 .jpg 01;35
@@ -111,6 +117,9 @@ EXEC 01;32
 .yuv 01;35
 .cgm 01;35
 .emf 01;35
+.ico 01;35
+.heic 01;35
+.heif 01;35
 
 # Audio
 .oga 00;36
@@ -130,3 +139,151 @@ EXEC 01;32
 .opus 00;36
 .spx 00;36
 .xspf 00;36
+.flac 00;36
+.mp3 00;36
+.alac 00;36
+
+# C/C++
+.c 00;33
+.cpp 00;33
+.cxx 00;33
+.cc 00;33
+.h 00;33
+.hpp 00;33
+.hxx 00;33
+
+# Python
+.py 00;33
+.pyc 00;33
+.pyd 00;33
+.pyo 00;33
+.ipynb 00;33
+
+# Java / Kotlin / Scala
+.java 00;33
+.class 00;33
+.kt 00;33
+.kts 00;33
+.scala 00;33
+
+# Go / Rust / C# / Swift / Dart
+.go 00;33
+.rs 00;33
+.cs 00;33
+.swift 00;33
+.dart 00;33
+
+# Ruby / Perl / PHP
+.rb 00;33
+.pl 00;33
+.pm 00;33
+.php 00;33
+.phtml 00;33
+
+# Shell / Bash / Zsh
+.sh 00;33
+.bash 00;33
+.zsh 00;33
+.fish 00;33
+.bat 00;33
+.cmd 00;33
+.ps1 00;33
+
+# Others
+.lua 00;33
+.r 00;33
+.jl 00;33
+.ex 00;33
+.exs 00;33
+.erl 00;33
+.hrl 00;33
+.clj 00;33
+.cljs 00;33
+.asm 00;33
+.s 00;33
+.v 00;33
+
+# HTML / CSS / JS / TS
+.html 01;33
+.htm 01;33
+.xhtml 01;33
+.css 01;33
+.scss 01;33
+.sass 01;33
+.less 01;33
+.js 01;33
+.jsx 01;33
+.mjs 01;33
+.cjs 01;33
+.ts 01;33
+.tsx 01;33
+
+# Frameworks
+.vue 01;33
+.svelte 01;33
+.astro 01;33
+
+# Config Files
+.json 00;35
+.yaml 00;35
+.yml 00;35
+.toml 00;35
+.xml 00;35
+.ini 00;35
+.conf 00;35
+.cfg 00;35
+.properties 00;35
+.env 00;35
+.rc 00;35
+.lock 00;35
+
+# Databases / Spreadsheets
+.csv 00;35
+.tsv 00;35
+.sql 00;35
+.db 00;35
+.sqlite 00;35
+.sqlite3 00;35
+.bson 00;35
+
+# Text & Docs
+.txt 00;37
+.md 00;37
+.markdown 00;37
+.rst 00;37
+.adoc 00;37
+.pdf 00;37
+.doc 00;37
+.docx 00;37
+.xls 00;37
+.xlsx 00;37
+.ppt 00;37
+.pptx 00;37
+.odt 00;37
+.ods 00;37
+.odp 00;37
+.rtf 00;37
+.tex 00;37
+.epub 00;37
+.mobi 00;37
+
+# Fonts
+.ttf 00;37
+.otf 00;37
+.woff 00;37
+.woff2 00;37
+.eot 00;37
+
+# Logs & Temp files
+.log 01;30
+.bak 01;30
+.tmp 01;30
+.temp 01;30
+.swp 01;30
+.swo 01;30
+.old 01;30
+.orig 01;30
+.pid 01;30
+.err 01;30
+.out 01;30
+.cache 01;30
